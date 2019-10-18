@@ -1,0 +1,31 @@
+{
+  "name": "social-machine-api",
+  "version": "1.0.0",
+  "description": " back-end rest api for social machine",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    ".": "nodemon index.jss",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "social",
+    "machine"
+  ],
+  "author": "Ivan Aphanasyev <nekaktotak2@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "koa": "^2.10.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^7.4.0",
+    "pg": "^7.12.1",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^5.21.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.4",
+    "sequelize-cli": "^5.5.1"
+  }
+}
