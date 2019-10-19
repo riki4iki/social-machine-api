@@ -15,13 +15,16 @@
   "author": "Ivan Aphanasyev <nekaktotak2@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "@koa/cors": "^2.2.3",
     "dotenv": "^8.2.0",
+    "jsonwebtoken": "^8.5.1",
     "koa": "^2.10.0",
     "koa-bodyparser": "^4.2.1",
     "koa-logger": "^3.2.1",
     "koa-router": "^7.4.0",
     "pg": "^7.12.1",
     "pg-hstore": "^2.3.3",
+    "request": "^2.88.0",
     "sequelize": "^5.21.0"
   },
   "devDependencies": {
