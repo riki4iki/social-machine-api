@@ -34,7 +34,7 @@ router.post("/", user, async (ctx, next) => {
     args:
       process.env.NODE_ENV == "development"
         ? ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"]
-        : ["--window-size=800,600", "--no-sandbox"]
+        : ["--window-size=800,600", "--no-sandbox", "--disable-setuid-sandbox"]
   });
   const context = browser.defaultBrowserContext();
   //        URL                  An array of permissions
