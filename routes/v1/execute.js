@@ -72,7 +72,8 @@ router.post("/", user, async (ctx, next) => {
     });
     console.log(`redirected to https://www.facebook.com/groups/${group.id}`);
 
-    const bodyHandle = await page.$("#pagelet_group_");
+    /*const bodyHandle = await page.$("#pagelet_group_");
+
     let height = 100000;
     console.log(height);
     function wait(ms) {
@@ -89,7 +90,7 @@ router.post("/", user, async (ctx, next) => {
       await wait(200);
       viewportIncr = viewportIncr + viewportHeight;
       console.log(height);
-    }
+    }*/
 
     // Some extra delay to let images load
     await wait(100);
@@ -97,7 +98,7 @@ router.post("/", user, async (ctx, next) => {
     await page.screenshot({
       path: "facebook.png"
     });
-    /*const res = await page.$$("._8c74");
+    const res = await page.$$("._8c74");
     await res.map(async item => {
       await item.$eval("a", ele => ele.click());
       //console.log(item);
@@ -106,7 +107,7 @@ router.post("/", user, async (ctx, next) => {
     await res.map(async item => {
       const local = await item.$("a");
       console.log(await local.evaluate(ele => ele.outerHTML));
-    });*/
+    });
   };
   await login();
   //await browser.close();
