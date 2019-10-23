@@ -1,6 +1,8 @@
 const Router = require("koa-router");
 const router = new Router();
 
+const _ = require("lodash");
+
 const models = require("../../models");
 const fb = require("../../lib/facebookAPI");
 const jwt = require("../../lib/jwt");
@@ -44,6 +46,7 @@ router.post("/login", async (ctx, next) => {
     .catch(err => ctx.throw(err));
   const pair = await jwt.createPair(user.id);
 
+  user = _.omit(user.dataValues, "fb_token");
   ctx.status = status;
   ctx.body = { jwt: pair, user: user };
 
@@ -64,6 +67,7 @@ router.post("/refresh", async (ctx, next) => {
     ctx.throw(400, "invalid refresh token");
   }
   const pair = await jwt.createPair(inputPayload.id);
+  console.log(`getting new jwt pair: old ${input}, new ${pair}`);
   ctx.status = 201;
   ctx.body = pair;
 

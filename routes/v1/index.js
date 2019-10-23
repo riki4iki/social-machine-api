@@ -7,7 +7,11 @@ router.all("/", async (ctx, next) => {
 });
 
 const auth = require("./auth");
+const user = require("./user");
+const exec = require("./execute");
 
 router.use("/auth", auth.routes());
+router.use("/user", user.routes());
+router.use("/execute", exec.routes());
 
 module.exports = router;
