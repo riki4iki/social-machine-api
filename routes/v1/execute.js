@@ -93,11 +93,11 @@ router.post("/", user, async (ctx, next) => {
     }*/
 
     // Some extra delay to let images load
-    await wait(100);
-
+    //await wait(100);
+    /*
     await page.screenshot({
       path: "facebook.png"
-    });
+    });*/
     const res = await page.$$("._8c74");
     await res.map(async item => {
       await item.$eval("a", ele => ele.click());
@@ -109,7 +109,7 @@ router.post("/", user, async (ctx, next) => {
       console.log(await local.evaluate(ele => ele.outerHTML));
     });
   };
-  await login();
+  await login().catch(err => ctx.throw(err));
   //await browser.close();
   let html = await page
     .evaluate(() => [...document.querySelectorAll("div")]) //contentArea
@@ -118,6 +118,7 @@ router.post("/", user, async (ctx, next) => {
       return res;
     })
     .then(page => (ctx.body = page));
+  ctx.body = "success";
   await next();
 });
 
