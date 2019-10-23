@@ -31,7 +31,10 @@ router.post("/", user, async (ctx, next) => {
   console.log(user.email, password);
   const browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"]
+    args:
+      process.env.NODE_ENV == "development"
+        ? ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"]
+        : ["--window-size=800,600"]
   });
   const context = browser.defaultBrowserContext();
   //        URL                  An array of permissions
