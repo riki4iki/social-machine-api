@@ -10,8 +10,9 @@ const genJti = range => {
 };
 module.exports = {
   secret: process.env.JWT_TOKEN_SECRET,
-  refresh_token_life: process.env.NODE_ENV == "development" ? 86400 : 3888000,
-  token_life: process.env.NODE_ENV == "development" ? 86400 : 1800,
+  refresh_token_life:
+    process.env.NODE_ENV == "development" ? 84600 * 2 : 84600 * 60,
+  token_life: process.env.NODE_ENV == "development" ? 84600 : 84600 / 4,
   issuer: process.env.JWT_ISSUER,
   sub: process.env.JWT_SUB,
   jti: genJti(15)

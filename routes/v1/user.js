@@ -8,12 +8,15 @@ const fb = require("../../lib/facebookAPI");
 
 const user = async (ctx, next) => {
   const access = ctx.headers.accesstoken;
-  const payload = await jwt
-    .getPayload(access)
-    .catch(err => ctx.throw(err.status, err.message));
+  const payload = await jwt.getPayload(access).catch(err => {
+    ctx.throw(err.status, err.message);
+  });
   const id = payload.id;
 
-  const user = await models.user.findByPk(id).catch(err => ctx.throw(err));
+  const user = await models.user.findByPk(id).catch(err => {
+    console.log(err);
+    ctx.throw(err);
+  });
   if (!user) ctx.throw(204);
 
   ctx.user = user;
