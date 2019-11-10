@@ -15,23 +15,22 @@ router.post("/login", async (ctx, next) => {
   let status = 200;
 
   if (!fbUser || fbUser.error) {
-    ctx.throw(400, fbUser.error);
+    ctx.throw(400, fbUser.error || "error with FACEBOOK api, something wrong");
   }
 
   let user = await models.user
     .findOne({
       where: {
-        fb_id: fbUser.id,
-        email: fbUser.email
+        fb_id: fbUser.id
+        //email: fbUser.email ? fbUser.email : ""
       }
     })
     .catch(err => ctx.throw(err));
-
   if (!user) {
     const obj = {
       name: fbUser.name,
       picture: fbUser.picture.data.url,
-      email: fbUser.email,
+      email: fbUser.email ? fbUser.email : null,
       fb_id: fbUser.id,
       fb_token: token
     };

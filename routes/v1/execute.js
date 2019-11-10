@@ -23,9 +23,8 @@ const user = async (ctx, next) => {
 };
 router.post("/", user, async (ctx, next) => {
   const user = ctx.user;
-  const password = ctx.request.body.pass;
-  const groupId = ctx.request.body.idGroup;
-  const group = await fb.getGroup(groupId, user.fb_token);
+  const username = user.email ? user.email : ctx.request.body.login;
+  const password = ctx.request.body.password;
   /*console.log(group);
   console.log(user.dataValues);*/
   console.log(user.email, password);
@@ -50,27 +49,38 @@ router.post("/", user, async (ctx, next) => {
   });
   let login = async () => {
     const ID = {
-      login: "#email",
-      pass: "#pass"
+      login: "input[name=email]",
+      pass: "input[name=pass]"
     };
     // login
     await page.goto("https://facebook.com", {
       waitUntil: "networkidle2"
     });
-    await page.waitForSelector(ID.login);
 
-    await page.type(ID.login, user.dataValues.email);
+    const element = await page.$("#name");
+    console.log(await element);
+
+    await page.waitForSelector(ID.login).catch(err => {
+      console.log(err.name);
+    });
+
+    await page.type(ID.login, username);
 
     await page.type(ID.pass, password);
-
-    await page.click("#loginbutton");
+    if (await page.$("#loginbutton")) {
+      await page.click("#loginbutton");
+    } else {
+      await page.click("button[type=submit]");
+    }
 
     console.log("login done");
     await page.waitForNavigation();
-    await page.goto(`https://www.facebook.com/groups/${group.id}`, {
+    await page.goto(`https://www.facebook.com/feed`, {
       waitUntil: "networkidle2"
     });
-    console.log(`redirected to https://www.facebook.com/groups/${group.id}`);
+    console.log(
+      `redirected to https://www.facebook.com/groups/HOPEmusicproject`
+    );
 
     /*const bodyHandle = await page.$("#pagelet_group_");
 

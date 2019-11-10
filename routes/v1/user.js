@@ -25,7 +25,6 @@ const user = async (ctx, next) => {
 
 router.get("/", user, async (ctx, next) => {
   //here need return auth user
-  console.log(ctx.headers);
   ctx.status = 200;
   ctx.body = ctx.user;
 });

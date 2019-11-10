@@ -15,7 +15,7 @@ module.exports = (seq, types) => {
     },
     email: {
       type: types.STRING,
-      allowNull: false,
+      allowNull: true,
       validate: {
         isEmail: {
           args: true,
