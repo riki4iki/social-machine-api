@@ -121,13 +121,7 @@ router.post("/", user, async (ctx, next) => {
   };
   await login().catch(err => ctx.throw(err));
   //await browser.close();
-  let html = await page
-    .evaluate(() => [...document.querySelectorAll("div")]) //contentArea
-    .then(res => {
-      console.log(res);
-      return res;
-    })
-    .then(page => (ctx.body = page));
+
   ctx.body = "success";
   await next();
 });

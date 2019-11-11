@@ -42,4 +42,33 @@ router.get("/groups/:id", user, async (ctx, next) => {
   ctx.body = group;
 });
 
+router.get("/savedGroups", user, async (ctx, next) => {
+  const user = ctx.user;
+
+  const savedGroups = await models.savedGroups.findAll({
+    where: { userId: user.id }
+  });
+
+  ctx.body = savedGroups;
+});
+
+router.post("/savedGroups/save", user, async (ctx, next) => {
+  const url = ctx.request.body.url;
+  const user = ctx.user;
+  await models.savedGroups
+    .create({ userId: user.id, url: url })
+    .catch(err => ctx.throw(err));
+  ctx.status = 201;
+});
+
+router.get("/savedGroups/:id", user, async (ctx, next) => {
+  const user = ctx.user;
+  const groupId = ctx.params.id;
+
+  const group = await models.savedGroups
+    .findAll({ where: { userId: user.id, id: groupId } })
+    .catch(err => ctx.throw(err));
+
+  ctx.body = group;
+});
 module.exports = router;
