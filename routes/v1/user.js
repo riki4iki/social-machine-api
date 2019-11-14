@@ -53,11 +53,13 @@ router.get("/savedGroups", user, async (ctx, next) => {
 });
 
 router.post("/savedGroups/save", user, async (ctx, next) => {
-  const url = ctx.request.body.url;
+  const identifier = ctx.request.body.identifier;
   const user = ctx.user;
   await models.savedGroups
-    .create({ userId: user.id, url: url })
-    .catch(err => ctx.throw(err));
+    .findOrCreate({
+      where: { userId: user.id, identifier: identifier }
+    })
+    .catch(err => ctx.throw(err, 400));
   ctx.status = 201;
 });
 

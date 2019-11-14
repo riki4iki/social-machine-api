@@ -12,7 +12,7 @@ module.exports = (sequelize, dataTypes) => {
         key: "id"
       }
     },
-    url: {
+    identifier: {
       type: dataTypes.STRING,
       allowNull: true
     }
