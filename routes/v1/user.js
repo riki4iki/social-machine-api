@@ -8,6 +8,7 @@ const fb = require("../../lib/facebookAPI");
 
 const user = async (ctx, next) => {
   const access = ctx.headers.accesstoken;
+
   const payload = await jwt.getPayload(access).catch(err => {
     ctx.throw(err.status, err.message);
   });
@@ -44,12 +45,17 @@ router.get("/groups/:id", user, async (ctx, next) => {
 
 router.get("/savedGroups", user, async (ctx, next) => {
   const user = ctx.user;
-
-  const savedGroups = await models.savedGroups.findAll({
-    where: { userId: user.id }
-  });
-
-  ctx.body = savedGroups;
+  const savedGroups = await models.savedGroups
+    .findAll({
+      where: { userId: user.id }
+    })
+    .catch(err => ctx.throw(err));
+  if (!savedGroups) {
+    ctx.status = 204;
+  } else {
+    ctx.body = savedGroups;
+  }
+  await next();
 });
 
 router.post("/savedGroups/save", user, async (ctx, next) => {
@@ -61,6 +67,7 @@ router.post("/savedGroups/save", user, async (ctx, next) => {
     })
     .catch(err => ctx.throw(err, 400));
   ctx.status = 201;
+  await next();
 });
 
 router.get("/savedGroups/:id", user, async (ctx, next) => {
@@ -72,5 +79,18 @@ router.get("/savedGroups/:id", user, async (ctx, next) => {
     .catch(err => ctx.throw(err));
 
   ctx.body = group;
+  await next();
+});
+
+router.delete("/savedGroups/:id/delete", user, async (ctx, next) => {
+  const user = ctx.user;
+  const groupId = ctx.params.id;
+
+  const group = await models.savedGroups.findOne({
+    where: { userId: user.id, id: groupId }
+  });
+  group && (await group.destroy().catch(err => ctx.throw(err)));
+  ctx.status = 204;
+  await next();
 });
 module.exports = router;

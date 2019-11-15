@@ -11,9 +11,12 @@ router.post("/login", async (ctx, next) => {
   //here need login from previous api
   //input data: token from ux(facebook)
   const token = ctx.request.body.token;
+  if (!token) {
+    ctx.throw(401, "token requered");
+  }
   const fbUser = await fb.getUser(token);
   let status = 200;
-
+  console.log(token);
   if (!fbUser || fbUser.error) {
     ctx.throw(400, fbUser.error || "error with FACEBOOK api, something wrong");
   }
@@ -26,6 +29,7 @@ router.post("/login", async (ctx, next) => {
       }
     })
     .catch(err => ctx.throw(err));
+  console.log(user.dataValues);
   if (!user) {
     const obj = {
       name: fbUser.name,
@@ -37,8 +41,10 @@ router.post("/login", async (ctx, next) => {
     user = await models.user.create(obj).catch(err => ctx.throw(err));
     status = 201;
   }
-  const longToken = await fb.generateLongLiveUserAccessToken(token);
-
+  const longToken = await fb
+    .generateLongLiveUserAccessToken(token)
+    .catch(err => console.log(123123213));
+  console.log(longToken);
   user = await user
     .update({ fb_token: longToken.access_token })
     .catch(err => ctx.throw(err));
@@ -58,9 +64,11 @@ router.post("/refresh", async (ctx, next) => {
     ctx.throw(err.status, err.message);
   });
 
-  const dbToken = (await models.refreshToken.findOne({
-    where: { userId: inputPayload.id }
-  })).dataValues.refreshToken;
+  const dbToken = (
+    await models.refreshToken.findOne({
+      where: { userId: inputPayload.id }
+    })
+  ).dataValues.refreshToken;
 
   const dbPayload = await jwt.getPayload(dbToken).catch(err => {
     ctx.throw(err.status, err.message);
