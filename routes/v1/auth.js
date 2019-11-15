@@ -43,8 +43,9 @@ router.post("/login", async (ctx, next) => {
   }
   const longToken = await fb
     .generateLongLiveUserAccessToken(token)
-    .catch(err => console.log(123123213));
+    .catch(err => ctx.throw(err.message, 401));
   console.log(longToken);
+
   user = await user
     .update({ fb_token: longToken.access_token })
     .catch(err => ctx.throw(err));
