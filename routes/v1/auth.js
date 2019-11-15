@@ -29,7 +29,7 @@ router.post("/login", async (ctx, next) => {
       }
     })
     .catch(err => ctx.throw(err));
-  console.log(user.dataValues);
+  user && console.log(user.dataValues);
   if (!user) {
     const obj = {
       name: fbUser.name,
