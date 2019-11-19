@@ -1,12 +1,18 @@
+const http = require("http");
+
+require("dotenv").config();
+
 const koa = require("koa");
+
 const bodyParser = require("koa-bodyparser");
 const logger = require("koa-logger");
-require("dotenv").config();
+const cors = require("@koa/cors");
+const Router = require("koa-router");
+
 const api = require("./routes");
 const db = require("./models");
-const cors = require("@koa/cors");
+const wsConfig = require("./config/wsConfig");
 
-const Router = require("koa-router");
 const router = new Router();
 router.use("/api", api.routes(), api.allowedMethods());
 
@@ -19,6 +25,9 @@ const corsOpt = {
 
 const app = new koa();
 
+const server = http.createServer(app.callback());
+
+const wss = wsConfig.create(server);
 app
   .use(logger())
   .use(cors())
@@ -52,8 +61,11 @@ app.on("error", (err, ctx) => {
 db.sequelize
   .sync()
   .then(() => {
-    app.listen(port, () => {
+    server.listen(port, () => {
       console.log(`server listening on ${port} port, ${process.pid} pid`);
     });
   })
-  .catch(console.log);
+  .catch(err => {
+    console.log("catched with server starting....");
+    console.log(err);
+  });

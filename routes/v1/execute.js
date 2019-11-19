@@ -1,13 +1,29 @@
 const Router = require("koa-router");
 const router = new Router();
-
+const WebSocket = require("ws");
 const models = require("../../models");
 const jwt = require("../../lib/jwt");
 
 const fb = require("../../lib/facebookAPI");
 
 const puppeteer = require("puppeteer");
+/*const wss = new WebSocket.Server({ port: 8080 });
+wss.on("listening", () => {
+  console.log("ws start");
+});
+wss.on("connection", function connection(ws) {
+  console.log("12313");
+  ws.on("message", message => {
+    console.log("received: ", message);
+    ws.send(message);
+  });
 
+  ws.send("something");
+  ws.on("close", message => {
+    console.log("CLOSEd");
+  });
+});
+*/
 const user = async (ctx, next) => {
   const access = ctx.headers.accesstoken;
   const payload = await jwt
@@ -21,6 +37,16 @@ const user = async (ctx, next) => {
   ctx.user = user;
   await next();
 };
+router.get("/openws", async (ctx, next) => {
+  console.log("can i open ws?");
+
+  ctx.body = "+";
+});
+router.get("/clients", async (ctx, next) => {
+  console.log(wss.clients);
+  ctx.body = wss.clients.size;
+});
+
 router.post("/", user, async (ctx, next) => {
   const user = ctx.user;
   const username = user.email ? user.email : ctx.request.body.login;
