@@ -2,6 +2,7 @@ const browser = require("../lib/puppeteer");
 const events = require("../lib/evenHandlers");
 
 const _ = require("lodash");
+const Content = require("../lib/content");
 
 const WebSocket = require("ws");
 
@@ -30,6 +31,8 @@ const onConnection = async (ws, req) => {
 
   ws.on("message", function incoming(message) {
     console.log(`received: ${message} from ${req.connection.remoteAddress}`);
+
+    content.content ? content.next() : ws.send("NETU ETOI HUINI");
   });
 
   ws.on("close", () => {
@@ -41,8 +44,8 @@ const onConnection = async (ws, req) => {
     ws.terminate();
   });
 
-  const username = "itechnfrm@gmail.com";
-  const password = "453035asa";
+  const username = process.env.TEST_EMAIL;
+  const password = process.env.TEST_PASS;
   console.log(username, password);
   const page = await browser.runBrowser();
 
@@ -53,14 +56,40 @@ const onConnection = async (ws, req) => {
   await browser.login(page, username, password);
   ws.send("login done, redirect to feed...");
   await browser.redirect(page, "https://facebook.com/feed");
-  page.waitFor(500);
-  const feed = await page.$("div[id^='more_pager_pagelet_']"); //more_pager_pagelet_5dd32c80442a01762977731
-  const box = await feed.boundingBox();
-  console.log(box);
+  await page.waitFor(1000);
 
-  const block = await feed.$$("._4ikz");
-  block.map(item => {
-    const local = item.$$("div[id^='hyperfeed_story_id_']"); //hyperfeed_story_id_5dd32e4a4a1e42f55879970
-  });
+  const content = new Content(page);
+
+  const feed = await page.$("div[id^='more_pager_pagelet_']"); //more_pager_pagelet_5dd32c80442a01762977731
+  content
+    .update()
+    .then(arr => arr.length)
+    .then(l => ws.send(l));
+
+  /* const blocks = await feed.$$("._4ikz");
+  blocks.map(item => {
+    item
+      .boundingBox()
+      .then(box => box)
+      .then(h => {
+        console.log(`block:`);
+        console.log(h);
+      });
+
+    item.$$("div[id^='hyperfeed_story_id_']").then(elementHandle => {
+      //console.log(elementHandle);
+      elementHandle.map(item => {
+        item
+          .boundingBox()
+          .then(box => box)
+          .then(h => {
+            console.log(`div:`);
+            console.log(h);
+          });
+        //item.evaluate(ele => ele.outerHTML).then(console.log);
+      });
+    }); //hyperfeed_story_id_5dd32e4a4a1e42f55879970
+  });*/
   console.log("ready");
+  ws.send("feed ready");
 };
