@@ -28,6 +28,9 @@ const app = new koa();
 const server = http.createServer(app.callback());
 
 const wss = wsConfig.create(server);
+server.on("upgrade", (req, socket, head) => {
+  console.log("upgrade");
+});
 app
   .use(logger())
   .use(cors())

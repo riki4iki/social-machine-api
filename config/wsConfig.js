@@ -2,9 +2,11 @@ const browser = require("../lib/puppeteer");
 const events = require("../lib/evenHandlers");
 
 const _ = require("lodash");
-const Content = require("../lib/content");
+const Browser = require("../lib/browser");
 
 const WebSocket = require("ws");
+
+const sessions = [];
 
 module.exports = {
   create: http => {
@@ -25,18 +27,45 @@ const onListening = () => {
   console.log("wss start listen");
 };
 const onConnection = async (ws, req) => {
+  const userData = req.headers["sec-websocket-protocol"].toString().split("^");
+  const userId = userData[0];
+  console.log(req.headers);
+  if (sessions[userId]) {
+    const before = sessions[userId];
+    before.close();
+    sessions[userId] = ws;
+  } else {
+    sessions[userId] = ws;
+    console.log("new user");
+  }
   console.log(
     `start websocket connection from ${req.connection.remoteAddress}`
   );
-
   ws.on("message", function incoming(message) {
-    console.log(`received: ${message} from ${req.connection.remoteAddress}`);
-
-    content.content ? content.next() : ws.send("NETU ETOI HUINI");
+    const obj = JSON.parse(message);
+    if ("type" in obj) {
+      console.log(obj);
+      if (obj.type === "next") {
+        browser
+          .next()
+          .then(() => browser.current())
+          .then(html => ws.send(html));
+      }
+      if (obj.type === "prev") {
+        browser
+          .previous()
+          .then(() => browser.current())
+          .then(html => ws.send(html));
+      }
+      if (obj.type === "like") {
+        browser.like();
+      }
+    }
   });
 
   ws.on("close", () => {
     console.log(`closed connection with ${req.connection.remoteAddress}`);
+    browser.dispose();
   });
   ws.send("connect");
 
@@ -44,52 +73,23 @@ const onConnection = async (ws, req) => {
     ws.terminate();
   });
 
-  const username = process.env.TEST_EMAIL;
-  const password = process.env.TEST_PASS;
+  const username = userData[1];
+  const password = userData[2];
   console.log(username, password);
-  const page = await browser.runBrowser();
 
-  ws.send("open browser");
-  //need to redirect to facebook for login
-  await browser.redirect(page, "https://facebook.com");
-  ws.send("redirect to facebook, try to login...");
-  await browser.login(page, username, password);
-  ws.send("login done, redirect to feed...");
-  await browser.redirect(page, "https://facebook.com/feed");
-  await page.waitFor(1000);
-
-  const content = new Content(page);
-
-  const feed = await page.$("div[id^='more_pager_pagelet_']"); //more_pager_pagelet_5dd32c80442a01762977731
-  content
-    .update()
-    .then(arr => arr.length)
-    .then(l => ws.send(l));
-
-  /* const blocks = await feed.$$("._4ikz");
-  blocks.map(item => {
-    item
-      .boundingBox()
-      .then(box => box)
-      .then(h => {
-        console.log(`block:`);
-        console.log(h);
-      });
-
-    item.$$("div[id^='hyperfeed_story_id_']").then(elementHandle => {
-      //console.log(elementHandle);
-      elementHandle.map(item => {
-        item
-          .boundingBox()
-          .then(box => box)
-          .then(h => {
-            console.log(`div:`);
-            console.log(h);
-          });
-        //item.evaluate(ele => ele.outerHTML).then(console.log);
-      });
-    }); //hyperfeed_story_id_5dd32e4a4a1e42f55879970
-  });*/
-  console.log("ready");
-  ws.send("feed ready");
+  const browser = new Browser(userId);
+  ws.send("open browser....");
+  await browser.runBrowser();
+  ws.send("redirect to facebook....");
+  await browser.redirect("https://facebook.com");
+  ws.send("login....");
+  await browser.login(username, password);
+  ws.send("redirect to feed...");
+  await browser.redirect("https://facebook.com/feed");
+  ws.send("parse feed...");
+  await browser
+    .init()
+    .then(() => browser.current())
+    .then(html => ws.send(html));
+  //connection end
 };
