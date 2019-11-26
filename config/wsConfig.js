@@ -1,7 +1,5 @@
-const browser = require("../lib/puppeteer");
 const events = require("../lib/evenHandlers");
 
-const _ = require("lodash");
 const Browser = require("../lib/browser");
 
 const WebSocket = require("ws");
@@ -15,9 +13,9 @@ module.exports = {
     wss.on("listening", onListening);
     wss.on("connection", onConnection);
     wss.on("error", () => console.log("need method for wss.onerror"));
-    wss.on("headers", () => console.log("need method for wss.onheadres"));
-    wss.addListener("event", () => {
-      console.log("added event");
+    wss.on("headers", headers => console.log(headers));
+    wss.addListener("page.closed", () => {
+      console.log("page closssssssssssssssss");
     });
     return wss;
   }
@@ -27,9 +25,12 @@ const onListening = () => {
   console.log("wss start listen");
 };
 const onConnection = async (ws, req) => {
-  const userData = req.headers["sec-websocket-protocol"].toString().split("^");
-  const userId = userData[0];
-  console.log(req.headers);
+  const userId = req.headers["sec-websocket-protocol"];
+
+  const url = require("url").parse(req.url, true).query;
+  const username = url.username;
+  const password = url.password;
+
   if (sessions[userId]) {
     const before = sessions[userId];
     before.close();
@@ -48,12 +49,14 @@ const onConnection = async (ws, req) => {
       if (obj.type === "next") {
         browser
           .next()
+          .then(() => browser.like())
           .then(() => browser.current())
           .then(html => ws.send(html));
       }
       if (obj.type === "prev") {
         browser
           .previous()
+          .then(() => browser.like())
           .then(() => browser.current())
           .then(html => ws.send(html));
       }
@@ -67,29 +70,31 @@ const onConnection = async (ws, req) => {
     console.log(`closed connection with ${req.connection.remoteAddress}`);
     browser.dispose();
   });
-  ws.send("connect");
+  await send(ws, { type: "connection", data: "connect" });
 
   events.pageHandler.on("page.closed", () => {
     ws.terminate();
   });
 
-  const username = userData[1];
-  const password = userData[2];
-  console.log(username, password);
-
   const browser = new Browser(userId);
-  ws.send("open browser....");
+  await send(ws, { type: "connection", data: "open browser...." });
   await browser.runBrowser();
-  ws.send("redirect to facebook....");
+  await send(ws, { type: "connection", data: "redirect to facebook..." });
   await browser.redirect("https://facebook.com");
-  ws.send("login....");
+  await send(ws, { type: "connection", data: "login...." });
   await browser.login(username, password);
-  ws.send("redirect to feed...");
+  await send(ws, { type: "connection", data: "redirect to feed..." });
   await browser.redirect("https://facebook.com/feed");
-  ws.send("parse feed...");
+  await send(ws, { type: "connection", data: "parse feed..." });
   await browser
     .init()
+    .then(() => browser.like())
     .then(() => browser.current())
     .then(html => ws.send(html));
   //connection end
+};
+const send = async (ws, message) => {
+  const str = JSON.stringify(message);
+
+  return ws.send(str);
 };

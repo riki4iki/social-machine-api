@@ -16,13 +16,6 @@ const wsConfig = require("./config/wsConfig");
 const router = new Router();
 router.use("/api", api.routes(), api.allowedMethods());
 
-const corsOpt = {
-  origin: true,
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  exposedHeaders: ["x-auth-token"]
-};
-
 const app = new koa();
 
 const server = http.createServer(app.callback());
